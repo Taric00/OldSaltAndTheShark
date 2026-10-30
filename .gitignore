@@ -1,0 +1,28 @@
+# Unreal Engine - otomatik üretilen, yeniden oluşturulabilen klasörler
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+Build/
+
+# Visual Studio / IDE
+.vs/
+.idea/
+*.sln
+*.slnx
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+
+# Plugin derleme çıktıları
+Plugins/*/Binaries/
+Plugins/*/Intermediate/
+
+# İşletim sistemi
+.DS_Store
+Thumbs.db
+
+# VibeUE indirme kopyasi (kendi git deposu)
+Plugins/UE-MCP/dl/
