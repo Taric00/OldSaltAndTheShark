@@ -672,12 +672,12 @@ void AFishPhysicsCharacter::FireRifle()
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Shark, Params);
 	const FVector ShotEnd = bHit ? FVector(Hit.ImpactPoint) : End;
 
-	// Forward/right/up from the character, not the weapon mesh's own (scaled, oddly-rotated) local axes:
-	// that way the offset is real world centimeters and does not drift with the hand-pose scale pop.
+	// Rotate (not transform) by the weapon mesh's own component rotation: that follows the hand socket's
+	// animated pose - including the AimOffset pitch as the player looks up/down - unlike the character
+	// actor's rotation, which only ever yaws. Rotating (instead of TransformPosition-ing) also keeps the
+	// offset in real world centimeters, independent of the mesh's tiny hand-pose scale.
 	const FVector Muzzle = WeaponMesh->GetComponentLocation()
-		+ GetActorForwardVector() * RifleMuzzleOffset.X
-		+ GetActorRightVector() * RifleMuzzleOffset.Y
-		+ GetActorUpVector() * RifleMuzzleOffset.Z;
+		+ WeaponMesh->GetComponentRotation().RotateVector(RifleMuzzleOffset);
 
 	ABoatPawn* Boat = nullptr;
 	for (TActorIterator<ABoatPawn> It(GetWorld()); It; ++It)

@@ -460,11 +460,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fish|Rifle", meta = (ClampMin = "0"))
 	float RifleRecoilPitch = 1.4f;
 
-	/** Where the shot streak starts, as forward/right/up (cm) from the weapon's hand socket, along the
-	 * character's own facing (not the gun mesh's local axes, and not affected by its hand-pose scale). Push
-	 * X out until it leaves from the barrel's tip instead of the hand. */
+	/** Where the shot streak starts, in the weapon mesh's own local space (rotated, not scaled, so it is
+	 * real world centimeters regardless of the tiny hand-pose scale). Follows the hand socket's animated
+	 * pose - including the AimOffset pitch as the player looks up/down - instead of a fixed point. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fish|Rifle")
-	FVector RifleMuzzleOffset = FVector(60.0, 0.0, 0.0);
+	FVector RifleMuzzleOffset = FVector(-3.56, 8.18, 59.33);
 
 	/** How long the shot streak stays and how thick it starts (cm). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fish|Rifle", meta = (ClampMin = "0"))
