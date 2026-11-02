@@ -116,9 +116,17 @@ protected:
 	float StickDepth = 28.f;
 
 	// ------------------------------------------------------------ rope
-	/** Length of the rope (cm). Also the farthest the harpoon can fly and the farthest the barrel can be dragged from it. */
+	/** How far the thrown harpoon itself can fly from the barrel (cm), while it is still in the air - this is
+	 * the player's throw range. Long enough to reach a shark circling at its normal depth and distance
+	 * (roughly 1000-1200 cm). Has no effect any more once the harpoon is stuck - see StuckRopeLength. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Harpoon|Rope", meta = (ClampMin = "100"))
-	float RopeLength = 1600.f;
+	float RopeLength = 1300.f;
+
+	/** How far the barrel can be dragged from the harpoon once it is stuck in the shark (cm). Shorter than
+	 * RopeLength on purpose: the throw needs reach, but a hooked shark pulling line forever looks wrong, so
+	 * the barrel is kept on a tighter leash once it is actually attached to something. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Harpoon|Rope", meta = (ClampMin = "50"))
+	float StuckRopeLength = 650.f;
 
 	/** Rope thickness (cm). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Harpoon|Rope", meta = (ClampMin = "0.2"))

@@ -295,21 +295,23 @@ void AHarpoon::TickStuck(float Dt)
 
 FVector AHarpoon::ConstrainBarrel(const FVector& Position, const FVector& Tip, bool& bOutTaut) const
 {
+	// Only ever called once the harpoon is stuck (from DriveBarrel, which TickStuck alone drives), so the
+	// shorter post-stick leash applies here, not the throw's RopeLength.
 	const FVector Offset = Position - Tip;
 	const float Distance = Offset.Size();
-	bOutTaut = Distance >= RopeLength - 0.5f;
-	if (Distance <= RopeLength)
+	bOutTaut = Distance >= StuckRopeLength - 0.5f;
+	if (Distance <= StuckRopeLength)
 	{
 		return Position;
 	}
 
 	// Keep the height, shorten the horizontal distance until the rope length fits.
 	const float Dz = Offset.Z;
-	const float Reach2 = FMath::Square(RopeLength) - Dz * Dz;
+	const float Reach2 = FMath::Square(StuckRopeLength) - Dz * Dz;
 	const FVector2D Flat = FVector2D(Offset.X, Offset.Y).GetSafeNormal();
 	if (Reach2 <= 0.f || Flat.IsNearlyZero())
 	{
-		return Tip + Offset / Distance * RopeLength;
+		return Tip + Offset / Distance * StuckRopeLength;
 	}
 	const float Reach = FMath::Sqrt(Reach2);
 	return FVector(Tip.X + Flat.X * Reach, Tip.Y + Flat.Y * Reach, Position.Z);
@@ -509,8 +511,11 @@ void AHarpoon::UpdateRope(float Dt)
 	const float Distance = FVector::Dist(A, B);
 
 	// A loose rope hangs in a parabola whose depth follows the slack. The depth changes smoothly and never
-	// overshoots, so the rope settles instead of swinging.
-	const float Slack = FMath::Max(RopeLength - Distance, 0.f);
+	// overshoots, so the rope settles instead of swinging. Whichever length is actually in play right now -
+	// the throw's reach while it is flying, the shorter post-stick leash once it has hit - is what the slack
+	// is measured against, so the rope never LOOKS longer than the barrel is actually allowed to be dragged.
+	const float ActiveRopeLength = Phase == EPhase::Stuck ? StuckRopeLength : RopeLength;
+	const float Slack = FMath::Max(ActiveRopeLength - Distance, 0.f);
 	const float TargetSag = FMath::Min(MaxSag, FMath::Sqrt(3.f * FMath::Max(Distance, 1.f) * Slack / 8.f));
 	Sag = FMath::FInterpTo(Sag, TargetSag, Dt, SagResponse);
 
