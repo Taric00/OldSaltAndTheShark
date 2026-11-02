@@ -32,11 +32,17 @@ AFishPhysicsCharacter::AFishPhysicsCharacter()
 	Capsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule"));
 	Capsule->InitCapsuleSize(34.f, 90.f);
 	Capsule->SetCollisionProfileName(TEXT("Pawn"));
-	Capsule->SetSimulatePhysics(true);
+	// SetSimulatePhysics and SetMassOverrideInKg are NOT called here: both resolve the body's physical
+	// material right away (UpdateMassProperties calls GetSimplePhysicalMaterial unconditionally), which needs
+	// GEngine - it does not exist yet while this class's one-off CDO is being built at startup, which made
+	// cooking fail outright. Skipping them only on the CDO is not an option either - for a Blueprint child
+	// like BP_FishPhysicsCharacter, every spawned instance's component re-inherits its properties from the
+	// Blueprint's own CDO, so whatever this constructor leaves on the CDO silently becomes every real
+	// instance's value too. BeginPlay (below) applies both instead - it runs once per real instance, after
+	// GEngine is guaranteed to exist, and never on a CDO.
 	Capsule->SetEnableGravity(true);
 	Capsule->SetLinearDamping(0.f);
 	Capsule->SetAngularDamping(4.f);
-	Capsule->SetMassOverrideInKg(NAME_None, BodyMass, true);
 	Capsule->BodyInstance.bUseCCD = true;
 	// Stay upright: only yaw is free. Yaw itself is steered through angular velocity.
 	Capsule->SetConstraintMode(EDOFMode::SixDOF);
@@ -167,6 +173,8 @@ void AFishPhysicsCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// See the constructor: simulation turns on here, once per real instance, instead of there.
+	Capsule->SetSimulatePhysics(true);
 	Capsule->SetMassOverrideInKg(NAME_None, BodyMass, true);
 	CameraArm->TargetArmLength = CameraDistance;
 	CurrentMaxSpeed = WalkSpeed;
